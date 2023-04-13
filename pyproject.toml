@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hwdev"
+version = "0.0.1"
+authors = [
+  { name="Nelson Elhage", email="nelhage@nelhage.com" },
+]
+description = "playground for hardware design and synthesis"
