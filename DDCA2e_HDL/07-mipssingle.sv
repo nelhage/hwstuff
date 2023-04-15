@@ -12,7 +12,7 @@ module testbench();
 
   // instantiate device to be tested
   top dut(clk, reset, writedata, dataadr, memwrite);
-  
+
   // initialize test
   initial
     begin
@@ -23,6 +23,15 @@ module testbench();
   always
     begin
       clk <= 1; # 5; clk <= 0; # 5;
+    end
+
+  initial
+    begin
+      $dumpvars(0, dut);
+
+      #5_000;
+      $display("We seem to be stuck");
+      $finish;
     end
 
   // check results
@@ -40,14 +49,14 @@ module testbench();
     end
 endmodule
 
-module top(input  logic        clk, reset, 
-           output logic [31:0] writedata, dataadr, 
+module top(input  logic        clk, reset,
+           output logic [31:0] writedata, dataadr,
            output logic        memwrite);
 
   logic [31:0] pc, instr, readdata;
-  
+
   // instantiate processor and memories
-  mips mips(clk, reset, pc, instr, memwrite, dataadr, 
+  mips mips(clk, reset, pc, instr, memwrite, dataadr,
             writedata, readdata);
   imem imem(pc[7:2], instr);
   dmem dmem(clk, memwrite, dataadr, writedata, readdata);
@@ -68,7 +77,7 @@ endmodule
 module imem(input  logic [5:0] a,
             output logic [31:0] rd);
 
-  logic [31:0] RAM[63:0];
+  logic [31:0] RAM[0:63];
 
   initial
       $readmemh("memfile.dat",RAM);
@@ -83,7 +92,7 @@ module mips(input  logic        clk, reset,
             output logic [31:0] aluout, writedata,
             input  logic [31:0] readdata);
 
-  logic       memtoreg, alusrc, regdst, 
+  logic       memtoreg, alusrc, regdst,
               regwrite, jump, pcsrc, zero;
   logic [2:0] alucontrol;
 
@@ -182,11 +191,11 @@ module datapath(input  logic        clk, reset,
   sl2         immsh(signimm, signimmsh);
   adder       pcadd2(pcplus4, signimmsh, pcbranch);
   mux2 #(32)  pcbrmux(pcplus4, pcbranch, pcsrc, pcnextbr);
-  mux2 #(32)  pcmux(pcnextbr, {pcplus4[31:28], 
+  mux2 #(32)  pcmux(pcnextbr, {pcplus4[31:28],
                     instr[25:0], 2'b00}, jump, pcnext);
 
   // register file logic
-  regfile     rf(clk, regwrite, instr[25:21], instr[20:16], 
+  regfile     rf(clk, regwrite, instr[25:21], instr[20:16],
                  writereg, result, srca, writedata);
   mux2 #(5)   wrmux(instr[20:16], instr[15:11],
                     regdst, writereg);
@@ -198,10 +207,10 @@ module datapath(input  logic        clk, reset,
   alu         alu(srca, srcb, alucontrol, aluout, zero);
 endmodule
 
-module regfile(input  logic        clk, 
-               input  logic        we3, 
-               input  logic [4:0]  ra1, ra2, wa3, 
-               input  logic [31:0] wd3, 
+module regfile(input  logic        clk,
+               input  logic        we3,
+               input  logic [4:0]  ra1, ra2, wa3,
+               input  logic [31:0] wd3,
                output logic [31:0] rd1, rd2);
 
   logic [31:0] rf[31:0];
@@ -214,7 +223,7 @@ module regfile(input  logic        clk,
   // on falling edge of clk
 
   always_ff @(posedge clk)
-    if (we3) rf[wa3] <= wd3;	
+    if (we3) rf[wa3] <= wd3;
 
   assign rd1 = (ra1 != 0) ? rf[ra1] : 0;
   assign rd2 = (ra2 != 0) ? rf[ra2] : 0;
@@ -235,13 +244,13 @@ endmodule
 
 module signext(input  logic [15:0] a,
                output logic [31:0] y);
-              
+
   assign y = {{16{a[15]}}, a};
 endmodule
 
 module flopr #(parameter WIDTH = 8)
               (input  logic             clk, reset,
-               input  logic [WIDTH-1:0] d, 
+               input  logic [WIDTH-1:0] d,
                output logic [WIDTH-1:0] q);
 
   always_ff @(posedge clk, posedge reset)
@@ -250,11 +259,11 @@ module flopr #(parameter WIDTH = 8)
 endmodule
 
 module mux2 #(parameter WIDTH = 8)
-             (input  logic [WIDTH-1:0] d0, d1, 
-              input  logic             s, 
+             (input  logic [WIDTH-1:0] d0, d1,
+              input  logic             s,
               output logic [WIDTH-1:0] y);
 
-  assign y = s ? d1 : d0; 
+  assign y = s ? d1 : d0;
 endmodule
 
 module alu(input  logic [31:0] a, b,
@@ -267,7 +276,7 @@ module alu(input  logic [31:0] a, b,
   assign condinvb = alucontrol[2] ? ~b : b;
   assign sum = a + condinvb + alucontrol[2];
 
-  always_comb
+  always @(alucontrol, a, b, sum)
     case (alucontrol[1:0])
       2'b00: result = a & b;
       2'b01: result = a | b;

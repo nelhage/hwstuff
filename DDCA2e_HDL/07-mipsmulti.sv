@@ -1,5 +1,5 @@
 // mips.sv
-// 26 July 2011 
+// 26 July 2011
 // David_Harris@hmc.edu and Sarah_Harris@hmc.edu
 
 module testbench();
@@ -12,7 +12,7 @@ module testbench();
 
   // instantiate device to be tested
   top dut(clk, reset, writedata, dataadr, memwrite);
-  
+
   // initialize test
   initial
     begin
@@ -40,16 +40,16 @@ module testbench();
     end
 endmodule
 
-module top(input  logic        clk, reset, 
-           output logic [31:0] writedata, adr, 
+module top(input  logic        clk, reset,
+           output logic [31:0] writedata, adr,
            output logic        memwrite);
 
   logic [31:0] readdata;
-  
+
   // microprocessor (control & datapath)
   mipsmulti mipsmulti(clk, reset, adr, writedata, memwrite, readdata);
 
-  // memory 
+  // memory
   mem mem(clk, memwrite, adr, writedata, readdata);
 
 endmodule
@@ -64,8 +64,8 @@ module mem(input  logic        clk, we,
   // initialize memory with instructions
   initial
     begin
-      $readmemh("memfile.dat",RAM);  // "memfile.dat" contains your instructions in hex
-                                     // you must create this file
+       $readmemh("memfile.dat",RAM);  // "memfile.dat" contains your instructions in hex
+                                      // you must create this file
     end
 
   assign rd = RAM[a[31:2]]; // word aligned
@@ -89,9 +89,9 @@ module mipsmulti(
 
   controller c(clk, reset, op, funct, zero,
                pcen, memwrite, irwrite, regwrite,
-               alusrca, iord, memtoreg, regdst, 
+               alusrca, iord, memtoreg, regdst,
                alusrcb, pcsrc, alucontrol);
-  datapath dp(clk, reset, 
+  datapath dp(clk, reset,
               pcen, irwrite, regwrite,
               alusrca, iord, memtoreg, regdst,
               alusrcb, pcsrc, alucontrol,
@@ -114,16 +114,16 @@ module controller(input  logic       clk, reset,
   // Main Decoder and ALU Decoder subunits.
   maindec md(clk, reset, op,
              pcwrite, memwrite, irwrite, regwrite,
-             alusrca, branch, iord, memtoreg, regdst, 
+             alusrca, branch, iord, memtoreg, regdst,
              alusrcb, pcsrc, aluop);
   aludec  ad(funct, aluop, alucontrol);
 
   assign pcen = pcwrite | branch & zero;
- 
+
 endmodule
 
-module maindec(input  logic       clk, reset, 
-               input  logic [5:0] op, 
+module maindec(input  logic       clk, reset,
+               input  logic [5:0] op,
                output logic       pcwrite, memwrite, irwrite, regwrite,
                output logic       alusrca, branch, iord, memtoreg, regdst,
                output logic [1:0] alusrcb, pcsrc,
@@ -153,7 +153,7 @@ module maindec(input  logic       clk, reset,
   logic [14:0] controls;
 
   // state register
-  always_ff @(posedge clk or posedge reset)			
+  always_ff @(posedge clk or posedge reset)
     if(reset) state <= FETCH;
     else state <= nextstate;
 
@@ -189,7 +189,7 @@ module maindec(input  logic       clk, reset,
     endcase
 
   // output logic
-  assign {pcwrite, memwrite, irwrite, regwrite, 
+  assign {pcwrite, memwrite, irwrite, regwrite,
           alusrca, branch, iord, memtoreg, regdst,
           alusrcb, pcsrc, aluop} = controls;
 
@@ -197,7 +197,7 @@ module maindec(input  logic       clk, reset,
     case(state)
       FETCH:   controls <= 15'h5010;
       DECODE:  controls <= 15'h0030;
-    // your code goes here      
+    // your code goes here
       MEMADR:  controls <= 15'h0420;
       MEMRD:   controls <= 15'h0100;
       MEMWB:   controls <= 15'h0880;
@@ -235,11 +235,11 @@ endmodule
 module datapath(input  logic        clk, reset,
                 input  logic        pcen, irwrite, regwrite,
                 input  logic        alusrca, iord, memtoreg, regdst,
-                input  logic [1:0]  alusrcb, pcsrc, 
+                input  logic [1:0]  alusrcb, pcsrc,
                 input  logic [2:0]  alucontrol,
                 output logic [5:0]  op, funct,
                 output logic        zero,
-                output logic [31:0] adr, writedata, 
+                output logic [31:0] adr, writedata,
                 input  logic [31:0] readdata);
 
   // Below are the internal signals of the datapath module.
@@ -277,10 +277,10 @@ endmodule
 
 
 // building blocks
-module regfile(input  logic        clk, 
-               input  logic        we3, 
-               input  logic [4:0]  ra1, ra2, wa3, 
-               input  logic [31:0] wd3, 
+module regfile(input  logic        clk,
+               input  logic        we3,
+               input  logic [4:0]  ra1, ra2, wa3,
+               input  logic [31:0] wd3,
                output logic [31:0] rd1, rd2);
 
   logic [31:0] rf[31:0];
@@ -293,7 +293,7 @@ module regfile(input  logic        clk,
   // on falling edge of clk
 
   always_ff @(posedge clk)
-    if (we3) rf[wa3] <= wd3;	
+    if (we3) rf[wa3] <= wd3;
 
   assign rd1 = (ra1 != 0) ? rf[ra1] : 0;
   assign rd2 = (ra2 != 0) ? rf[ra2] : 0;
@@ -314,13 +314,13 @@ endmodule
 
 module signext(input  logic [15:0] a,
                output logic [31:0] y);
-              
+
   assign y = {{16{a[15]}}, a};
 endmodule
 
 module flopr #(parameter WIDTH = 8)
               (input  logic             clk, reset,
-               input  logic [WIDTH-1:0] d, 
+               input  logic [WIDTH-1:0] d,
                output logic [WIDTH-1:0] q);
 
   always_ff @(posedge clk, posedge reset)
@@ -329,11 +329,11 @@ module flopr #(parameter WIDTH = 8)
 endmodule
 
 module mux2 #(parameter WIDTH = 8)
-             (input  logic [WIDTH-1:0] d0, d1, 
-              input  logic             s, 
+             (input  logic [WIDTH-1:0] d0, d1,
+              input  logic             s,
               output logic [WIDTH-1:0] y);
 
-  assign y = s ? d1 : d0; 
+  assign y = s ? d1 : d0;
 endmodule
 
 module alu(input  logic [31:0] a, b,
@@ -346,7 +346,8 @@ module alu(input  logic [31:0] a, b,
   assign condinvb = alucontrol[2] ? ~b : b;
   assign sum = a + condinvb + alucontrol[2];
 
-  always_comb
+  // always_comb
+  always @(*)
     case (alucontrol[1:0])
       2'b00: result = a & b;
       2'b01: result = a | b;
@@ -360,15 +361,15 @@ endmodule
 
 module mux3 #(parameter WIDTH = 8)
              (input  logic [WIDTH-1:0] d0, d1, d2,
-              input  logic [1:0]       s, 
+              input  logic [1:0]       s,
               output logic [WIDTH-1:0] y);
 
-  assign #1 y = s[1] ? d2 : (s[0] ? d1 : d0); 
+  assign #1 y = s[1] ? d2 : (s[0] ? d1 : d0);
 endmodule
 
 module mux4 #(parameter WIDTH = 8)
              (input  logic [WIDTH-1:0] d0, d1, d2, d3,
-              input  logic [1:0]       s, 
+              input  logic [1:0]       s,
               output logic [WIDTH-1:0] y);
 
    always_comb
@@ -382,11 +383,10 @@ endmodule
 
 module flopenr #(parameter WIDTH = 8)
               (input  logic             clk, reset, en,
-               input  logic [WIDTH-1:0] d, 
+               input  logic [WIDTH-1:0] d,
                output logic [WIDTH-1:0] q);
 
   always_ff @(posedge clk, posedge reset)
     if (reset)   q <= 0;
     else if (en) q <= d;
 endmodule
-
