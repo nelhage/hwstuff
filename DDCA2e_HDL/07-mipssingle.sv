@@ -16,13 +16,13 @@ module testbench();
   // initialize test
   initial
     begin
-      reset <= 1; # 22; reset <= 0;
+      reset = 1; # 22; reset = 0;
     end
 
   // generate clock to sequence tests
   always
     begin
-      clk <= 1; # 5; clk <= 0; # 5;
+      clk = 1; # 5; clk = 0; # 5;
     end
 
   initial
@@ -68,10 +68,14 @@ module dmem(input  logic        clk, we,
 
   logic [31:0] RAM[63:0];
 
-  assign rd = RAM[a[31:2]]; // word aligned
+  logic [5:0] addr;
+
+  assign addr = a[7:2];
+
+  assign rd = RAM[addr]; // word aligned
 
   always_ff @(posedge clk)
-    if (we) RAM[a[31:2]] <= wd;
+    if (we) RAM[addr] <= wd;
 endmodule
 
 module imem(input  logic [5:0] a,
@@ -139,13 +143,13 @@ module maindec(input  logic [5:0] op,
 
   always_comb
     case(op)
-      6'b000000: controls <= 9'b110000010; // RTYPE
-      6'b100011: controls <= 9'b101001000; // LW
-      6'b101011: controls <= 9'b001010000; // SW
-      6'b000100: controls <= 9'b000100001; // BEQ
-      6'b001000: controls <= 9'b101000000; // ADDI
-      6'b000010: controls <= 9'b000000100; // J
-      default:   controls <= 9'bxxxxxxxxx; // illegal op
+      6'b000000: controls = 9'b110000010; // RTYPE
+      6'b100011: controls = 9'b101001000; // LW
+      6'b101011: controls = 9'b001010000; // SW
+      6'b000100: controls = 9'b000100001; // BEQ
+      6'b001000: controls = 9'b101000000; // ADDI
+      6'b000010: controls = 9'b000000100; // J
+      default:   controls = 9'bxxxxxxxxx; // illegal op
     endcase
 endmodule
 
@@ -155,15 +159,15 @@ module aludec(input  logic [5:0] funct,
 
   always_comb
     case(aluop)
-      2'b00: alucontrol <= 3'b010;  // add (for lw/sw/addi)
-      2'b01: alucontrol <= 3'b110;  // sub (for beq)
+      2'b00: alucontrol = 3'b010;  // add (for lw/sw/addi)
+      2'b01: alucontrol = 3'b110;  // sub (for beq)
       default: case(funct)          // R-type instructions
-          6'b100000: alucontrol <= 3'b010; // add
-          6'b100010: alucontrol <= 3'b110; // sub
-          6'b100100: alucontrol <= 3'b000; // and
-          6'b100101: alucontrol <= 3'b001; // or
-          6'b101010: alucontrol <= 3'b111; // slt
-          default:   alucontrol <= 3'bxxx; // ???
+          6'b100000: alucontrol = 3'b010; // add
+          6'b100010: alucontrol = 3'b110; // sub
+          6'b100100: alucontrol = 3'b000; // and
+          6'b100101: alucontrol = 3'b001; // or
+          6'b101010: alucontrol = 3'b111; // slt
+          default:   alucontrol = 3'bxxx; // ???
         endcase
     endcase
 endmodule
@@ -274,14 +278,14 @@ module alu(input  logic [31:0] a, b,
   logic [31:0] condinvb, sum;
 
   assign condinvb = alucontrol[2] ? ~b : b;
-  assign sum = a + condinvb + alucontrol[2];
+  assign sum = a + condinvb + {31'b0, alucontrol[2]};
 
   always @(alucontrol, a, b, sum)
     case (alucontrol[1:0])
       2'b00: result = a & b;
       2'b01: result = a | b;
       2'b10: result = sum;
-      2'b11: result = sum[31];
+      2'b11: result = {31'b0, sum[31]};
     endcase
 
   assign zero = (result == 32'b0);
