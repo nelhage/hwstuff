@@ -40,10 +40,10 @@ module testbench();
       if(memwrite) begin
         if(dataadr === 84 & writedata === 7) begin
           $display("Simulation succeeded");
-          $stop;
+          $finish;
         end else if (dataadr !== 80) begin
           $display("Simulation failed");
-          $stop;
+          $finish;
         end
       end
     end
