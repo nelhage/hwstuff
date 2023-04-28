@@ -2,3 +2,5 @@
 *.vcd
 *.wav
 .emacs
+obj_dir
+/build

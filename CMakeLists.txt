@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.22)
+project(hwdev)
+find_package(verilator HINTS $ENV{VERILATOR_ROOT})
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+add_executable(alu_test riscv/alu_test.cc)
+verilate(alu_test SOURCES riscv/alu.sv)
