@@ -1,9 +1,10 @@
 #include "Valu.h"
 #include <verilated.h>
+#include <gtest/gtest.h>
+
 
 #include <memory>
 #include <stdint.h>
-#include <stdio.h>
 
 using std::make_unique;
 
@@ -15,9 +16,8 @@ struct AluTest {
   uint32_t expect;
 };
 
-int main(int argc, char **argv) {
+TEST(RISCVTest, ALUTest) {
   auto contextp = make_unique<VerilatedContext>();
-  contextp->commandArgs(argc, argv);
 
   Valu alu;
 
@@ -94,22 +94,8 @@ int main(int argc, char **argv) {
     alu.b = tc.b;
     alu.eval();
 
-    if (alu.result != tc.expect) {
-      fprintf(stderr, "[FAILED] ctl=%d:%x a=%08x b=%08x expect=%08x != %08x\n",
-              tc.ctl_ex, tc.ctl, tc.a, tc.b, tc.expect, alu.result);
-    } else {
-      ok += 1;
-    }
+    EXPECT_EQ(alu.result, tc.expect);
   }
 
   alu.final();
-
-  if (ok == ntest) {
-    fprintf(stderr, "PASS %d tests\n", ntest);
-    return 0;
-  }
-
-  fprintf(stderr, "FAIL: %d/%d tests failed\n", ntest - ok, ntest);
-
-  return 1;
 }
