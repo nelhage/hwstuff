@@ -41,3 +41,8 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(riscv_test)
+
+add_custom_target(build_and_test
+  COMMAND env CTEST_OUTPUT_ON_FAILURE=1 ${CMAKE_CTEST_COMMAND}
+  DEPENDS riscv_test
+)
