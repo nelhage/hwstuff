@@ -1,7 +1,10 @@
 #include "Valu.h"
+#include <_types/_uint32_t.h>
 #include <verilated.h>
+
 #include <gtest/gtest.h>
 
+#include <fmt/core.h>
 
 #include <memory>
 #include <stdint.h>
@@ -84,10 +87,10 @@ TEST(RISCVTest, ALUTest) {
       {1, 0x5, 0xffffffff, 32, 0xffffffff},
   };
 
-  int ok = 0, ntest = 0;
-
   for (auto &tc : test_cases) {
-    ntest += 1;
+    SCOPED_TRACE(fmt::format("ctl={}:{:x} a={:08x} b={:08x}",
+                             uint32_t(tc.ctl_ex), uint32_t(tc.ctl), tc.a, tc.b));
+
     alu.ctl_ex = tc.ctl_ex;
     alu.ctl = tc.ctl;
     alu.a = tc.a;
