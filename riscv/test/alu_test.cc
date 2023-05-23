@@ -1,5 +1,4 @@
 #include "Valu.h"
-#include <_types/_uint32_t.h>
 #include <verilated.h>
 
 #include <gtest/gtest.h>
