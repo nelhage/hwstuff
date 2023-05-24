@@ -14,7 +14,6 @@
 #include <vector>
 
 using std::ios;
-using std::make_unique;
 
 TEST(RISCVTest, MemoryTest) {
   auto contextp = std::make_unique<VerilatedContext>();
