@@ -6,3 +6,4 @@ obj_dir
 /build
 /.cache
 compile_commands.json
+testmem.dat
