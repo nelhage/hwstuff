@@ -11,7 +11,7 @@
 using std::make_unique;
 
 struct AluTest {
-  uint32_t ctl_ex : 1;
+  uint32_t ctlhi : 1;
   uint32_t ctl : 3;
   uint32_t a, b;
 
@@ -88,10 +88,9 @@ TEST(RISCVTest, ALUTest) {
 
   for (auto &tc : test_cases) {
     SCOPED_TRACE(fmt::format("ctl={}:{:x} a={:08x} b={:08x}",
-                             uint32_t(tc.ctl_ex), uint32_t(tc.ctl), tc.a, tc.b));
+                             uint32_t(tc.ctlhi), uint32_t(tc.ctl), tc.a, tc.b));
 
-    alu.ctl_ex = tc.ctl_ex;
-    alu.ctl = tc.ctl;
+    alu.ctl = (tc.ctlhi << 3)| tc.ctl;
     alu.a = tc.a;
     alu.b = tc.b;
     alu.eval();

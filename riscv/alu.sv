@@ -1,8 +1,7 @@
 
 module alu(
            input logic [31:0]  a, b,
-           input logic ctl_ex,
-           input logic [2:0]   ctl,
+           input logic [3:0]   ctl,
            output logic [31:0] result
 );
   // always
@@ -13,9 +12,9 @@ module alu(
 
   always_comb
     begin
-      case (ctl)
+      case (ctl[2:0])
         // ADD
-        3'b000: result = (ctl_ex == 0) ? a + b : a - b;
+        3'b000: result = (ctl[3] == 0) ? a + b : a - b;
         // SLT
         3'b010: result = {31'b0, signed'(a) < signed'(b)};
         // SLTU
@@ -29,7 +28,7 @@ module alu(
         // SLL
         3'b001: result = a << b[4:0];
         // SR[AL]
-        3'b101: result = (ctl_ex == 0) ? (a >> b[4:0]) : signed'(signed'(a) >>> b[4:0]);
+        3'b101: result = (ctl[3] == 0) ? (a >> b[4:0]) : signed'(signed'(a) >>> b[4:0]);
 
         default: result = 0;
       endcase
