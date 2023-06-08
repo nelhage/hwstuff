@@ -5,15 +5,23 @@ add_executable(
   riscv_test
   test/alu_test.cc
   test/memory_test.cc
+  test/hart_test.cc
 )
 verilate(riscv_test
   SOURCES alu.sv
+  VERILATOR_ARGS -Wall
 )
 verilate(riscv_test
   SOURCES regfile.sv
+  VERILATOR_ARGS -Wall
 )
 verilate(riscv_test
   SOURCES memory.sv
+  VERILATOR_ARGS -Wall
+)
+verilate(riscv_test
+  SOURCES hart.sv
+  VERILATOR_ARGS -Wall
 )
 
 

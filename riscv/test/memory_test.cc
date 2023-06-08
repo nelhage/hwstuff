@@ -45,9 +45,17 @@ TEST(RISCVTest, MemoryTest) {
   // combinatorial read
   memory.we = 0;
   for (auto i = 0; i < mem_fill.size(); i += 129) {
-    memory.ra = i << 2;
+    memory.ra1 = i << 2;
+    memory.ra2 = 0;
     memory.eval();
-    EXPECT_EQ(memory.rd, mem_fill[i]) << fmt::format("addr={}", i);
+    EXPECT_EQ(memory.rd1, mem_fill[i]) << fmt::format("addr={}", i);
+    EXPECT_EQ(memory.rd2, mem_fill[0]);
+
+    memory.ra2 = i << 2;
+    memory.ra1 = 0;
+    memory.eval();
+    EXPECT_EQ(memory.rd2, mem_fill[i]) << fmt::format("addr={}", i);
+    EXPECT_EQ(memory.rd1, mem_fill[0]);
   }
 
   // writes
@@ -58,9 +66,9 @@ TEST(RISCVTest, MemoryTest) {
   memory.clk = 1;
   memory.eval();
 
-  memory.ra = 512;
+  memory.ra1 = 512;
   memory.eval();
-  EXPECT_EQ(memory.rd, 0xabcd4321);
+  EXPECT_EQ(memory.rd1, 0xabcd4321);
 
   memory.clk = 0;
   memory.wa = 512;
@@ -70,15 +78,15 @@ TEST(RISCVTest, MemoryTest) {
   memory.clk = 1;
   memory.eval();
 
-  EXPECT_EQ(memory.rd, 0xabcd4321);
+  EXPECT_EQ(memory.rd1, 0xabcd4321);
 
-  memory.ra = (mem_fill.size()) << 2;
+  memory.ra1 = (mem_fill.size()) << 2;
   memory.eval();
-  EXPECT_EQ(memory.rd, 0);
+  EXPECT_EQ(memory.rd1, 0);
 
-  memory.ra = (mem_fill.size() - 1) << 2;
+  memory.ra1 = (mem_fill.size() - 1) << 2;
   memory.eval();
-  EXPECT_EQ(memory.rd, mem_fill.back());
+  EXPECT_EQ(memory.rd1, mem_fill.back());
 
   memory.final();
 }
