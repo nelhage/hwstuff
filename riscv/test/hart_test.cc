@@ -42,6 +42,9 @@ TEST(RISCVTest, HartTest) {
   run_insn(hart, 0x00a28333);
   EXPECT_EQ(hart.hart->regs->rf[6], 44+123);
 
+  // c:   fbcd02b7                lui     t0,0xfbcd0
+  run_insn(hart, 0xfbcd02b7);
+  EXPECT_EQ(hart.hart->regs->rf[5], 0xfbcd0000);
 
   hart.final();
 }

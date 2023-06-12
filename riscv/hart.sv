@@ -4,23 +4,26 @@
 
 module hart(input logic clk, reset,
             input logic [31:0]  insn,
+            // input logic [31:0]  pc,
 
             logic [31:0]        memdata,
             output logic [31:0] memaddr,
             output logic        memw, memsext,
             output logic [1:0]  memwidth
             );
-  logic [4:0] rs1, rs2, rd;
+`include "opcodes.sv";
+
+  logic [4:0]                   rs1, rs2, rd;
   logic       regw;
   logic [31:0] r1, r2, regwdata;
   logic [31:0] imm;
-  logic [6:0]  opcode;
 
   logic [31:0] alu_a, alu_b, alu_out;
 
   // control signals
   logic [2:0]  funct3;
   /* verilator lint_off UNUSEDSIGNAL */
+  logic [6:0]  opcode;
   logic [6:0]  funct7;
   /* verilator lint_on UNUSEDSIGNAL */
   logic [3:0]  aluctl;
@@ -66,9 +69,8 @@ module hart(input logic clk, reset,
   assign memsext = funct3[2];
 
   always_comb
-    case (opcode)
-      // [ARITH]I
-      7'b0010011:
+    case (opcode[6:2])
+      OPCODE_ALUIMM:
         begin
           bsel = 1;
           regw = 1;
@@ -77,35 +79,41 @@ module hart(input logic clk, reset,
           aluctl = {funct7[5], funct3};
         end
 
-      // [ARITH]
-      7'b0110011:
+      OPCODE_ALU:
         begin
           bsel = 0;
           regw = 1;
           memw = 0;
           rwsel = 0;
-          aluctl = 4'b0000;
+          aluctl = ALUCTL_ADD;
         end
 
-      // L[BHW]U?
-      7'b0000011:
+      OPCODE_LOAD:
         begin
           memw = 0;
           regw = 1;
           bsel = 1;
           rwsel = 1;
-          aluctl = 4'b0000;
+          aluctl = ALUCTL_ADD;
         end
 
-      // S[BHW]
-      7'b0100011:
+      OPCODE_STORE:
         begin
           memw = 1;
           regw = 0;
           bsel = 1;
-          aluctl = {funct7[5], funct3};
+          aluctl = ALUCTL_ADD;
 
           rwsel = 1'X;
+        end
+
+      OPCODE_LUI:
+        begin
+          memw = 0;
+          regw = 1;
+          bsel = 1;
+          aluctl = ALUCTL_ADD;
+          rwsel = 0;
         end
 
       default:

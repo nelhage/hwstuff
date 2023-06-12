@@ -4,6 +4,7 @@ module alu(
            input logic [3:0]   ctl,
            output logic [31:0] result
 );
+`include "opcodes.sv"
   // always
   //   begin
   //     $display("ctl=%b a=%b b=%b", ctl, a, b);
@@ -12,24 +13,17 @@ module alu(
 
   always_comb
     begin
-      case (ctl[2:0])
-        // ADD
-        3'b000: result = (ctl[3] == 0) ? a + b : a - b;
-        // SLT
-        3'b010: result = {31'b0, signed'(a) < signed'(b)};
-        // SLTU
-        3'b011: result = {31'b0, a < b};
-        // XOR
-        3'b100: result = a^b;
-        // OR
-        3'b110: result = a|b;
-        // AND
-        3'b111: result = a&b;
-        // SLL
-        3'b001: result = a << b[4:0];
-        // SR[AL]
-        3'b101: result = (ctl[3] == 0) ? (a >> b[4:0]) : signed'(signed'(a) >>> b[4:0]);
-
+      case (ctl)
+        ALUCTL_ADD: result = a + b;
+        ALUCTL_SUB: result = a - b;
+        ALUCTL_SLT: result = {31'b0, signed'(a) < signed'(b)};
+        ALUCTL_SLTU: result = {31'b0, a < b};
+        ALUCTL_XOR: result = a^b;
+        ALUCTL_OR: result = a|b;
+        ALUCTL_AND: result = a&b;
+        ALUCTL_SLL: result = a << b[4:0];
+        ALUCTL_SRL: result = (a >> b[4:0]);
+        ALUCTL_SRA: result = signed'(signed'(a) >>> b[4:0]);
         default: result = 0;
       endcase
     end
