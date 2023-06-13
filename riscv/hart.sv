@@ -21,9 +21,9 @@ module hart(input logic clk, reset,
   logic [31:0] alu_a, alu_b, alu_out;
 
   // control signals
+  logic [6:0]  opcode;
   logic [2:0]  funct3;
   /* verilator lint_off UNUSEDSIGNAL */
-  logic [6:0]  opcode;
   logic [6:0]  funct7;
   /* verilator lint_on UNUSEDSIGNAL */
   logic [3:0]  aluctl;
@@ -69,7 +69,7 @@ module hart(input logic clk, reset,
   assign memsext = funct3[2];
 
   always_comb
-    case (opcode[6:2])
+    case (opcode)
       OPCODE_ALUIMM:
         begin
           bsel = 1;
@@ -124,7 +124,7 @@ module hart(input logic clk, reset,
           aluctl = 0;
           rwsel = 0;
         end
-    endcase // case opcode
+    endcase
 
 
   // controller control(insn);

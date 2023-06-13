@@ -1,10 +1,10 @@
 /* verilator lint_off UNUSEDPARAM */
-localparam OPCODE_LUI = 5'h0D;
-localparam OPCODE_AUIPC = 5'h05;
-localparam OPCODE_JAL = 5'h1b;
-localparam OPCODE_JALR = 5'h19;
+localparam OPCODE_LUI   = 7'b0110111;
+localparam OPCODE_AUIPC = 7'b0010111;
+localparam OPCODE_JAL   = 7'b1101111;
+localparam OPCODE_JALR  = 7'b1100111;
 
-localparam OPCODE_BRANCH = 5'h18;
+localparam OPCODE_BRANCH = 7'b1100011;
 localparam FUNCT3_BRANCH_beq = 3'h0;
 localparam FUNCT3_BRANCH_bne = 3'h1;
 localparam FUNCT3_BRANCH_blt = 3'h4;
@@ -12,20 +12,20 @@ localparam FUNCT3_BRANCH_bge = 3'h5;
 localparam FUNCT3_BRANCH_bltu = 3'h6;
 localparam FUNCT3_BRANCH_bgeu = 3'h7;
 
-localparam OPCODE_LOAD = 5'h00;
+localparam OPCODE_LOAD = 7'b0000011;
 localparam FUNCT3_LOAD_lb = 3'h0;
 localparam FUNCT3_LOAD_lh = 3'h1;
 localparam FUNCT3_LOAD_lw = 3'h2;
 localparam FUNCT3_LOAD_lbu = 3'h4;
 localparam FUNCT3_LOAD_lhu = 3'h5;
 
-localparam OPCODE_STORE = 5'h08;
+localparam OPCODE_STORE = 7'b0100011;
 localparam FUNCT3_STORE_sb = 3'h0;
 localparam FUNCT3_STORE_sh = 3'h1;
 localparam FUNCT3_STORE_sw = 3'h2;
 
-localparam OPCODE_ALUIMM = 5'h04;
-localparam OPCODE_ALU = 5'h0C;
+localparam OPCODE_ALUIMM = 7'b0010011;
+localparam OPCODE_ALU = 7'b0110011;
 
 localparam FUNCT3_ALU_ADD = 3'h0;
 localparam FUNCT3_ALU_SLL = 3'h1;
