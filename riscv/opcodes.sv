@@ -5,19 +5,19 @@ localparam OPCODE_JAL   = 7'b1101111;
 localparam OPCODE_JALR  = 7'b1100111;
 
 localparam OPCODE_BRANCH = 7'b1100011;
-localparam FUNCT3_BRANCH_beq = 3'h0;
-localparam FUNCT3_BRANCH_bne = 3'h1;
-localparam FUNCT3_BRANCH_blt = 3'h4;
-localparam FUNCT3_BRANCH_bge = 3'h5;
-localparam FUNCT3_BRANCH_bltu = 3'h6;
-localparam FUNCT3_BRANCH_bgeu = 3'h7;
+localparam FUNCT3_BRANCH_BEQ = 3'h0;
+localparam FUNCT3_BRANCH_BNE = 3'h1;
+localparam FUNCT3_BRANCH_BLT = 3'h4;
+localparam FUNCT3_BRANCH_BGE = 3'h5;
+localparam FUNCT3_BRANCH_BLTU = 3'h6;
+localparam FUNCT3_BRANCH_BGEU = 3'h7;
 
 localparam OPCODE_LOAD = 7'b0000011;
-localparam FUNCT3_LOAD_lb = 3'h0;
-localparam FUNCT3_LOAD_lh = 3'h1;
-localparam FUNCT3_LOAD_lw = 3'h2;
-localparam FUNCT3_LOAD_lbu = 3'h4;
-localparam FUNCT3_LOAD_lhu = 3'h5;
+localparam FUNCT3_LOAD_LB = 3'h0;
+localparam FUNCT3_LOAD_LH = 3'h1;
+localparam FUNCT3_LOAD_LW = 3'h2;
+localparam FUNCT3_LOAD_LBU = 3'h4;
+localparam FUNCT3_LOAD_LHU = 3'h5;
 
 localparam OPCODE_STORE = 7'b0100011;
 localparam FUNCT3_STORE_sb = 3'h0;
