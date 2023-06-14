@@ -66,7 +66,7 @@ module hart(input logic clk, reset,
   // controller
   assign asel = 0;
   assign memwidth = funct3[1:0];
-  assign memsext = funct3[2];
+  assign memsext = ~funct3[2];
 
   always_comb
     case (opcode)

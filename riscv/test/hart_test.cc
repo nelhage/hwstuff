@@ -7,12 +7,18 @@
 #include "svdpi.h"
 #include <verilated.h>
 
-void run_insn(Vhart &hart, uint32_t insn) {
+template <typename T>
+void run_insn(Vhart &hart, uint32_t insn, T&& handle_mem) {
   hart.clk = 0;
   hart.insn = insn;
   hart.eval();
+  handle_mem();
   hart.clk = 1;
   hart.eval();
+}
+
+void run_insn(Vhart &hart, uint32_t insn) {
+  run_insn(hart, insn, [](){});
 }
 
 TEST(RISCVTest, HartTest) {
@@ -45,6 +51,40 @@ TEST(RISCVTest, HartTest) {
   // c:   fbcd02b7                lui     t0,0xfbcd0
   run_insn(hart, 0xfbcd02b7);
   EXPECT_EQ(hart.hart->regs->rf[5], 0xfbcd0000);
+
+  // 10:   000041b7                lui     gp,0x4
+  run_insn(hart, 0x000041b7);
+  EXPECT_EQ(hart.hart->regs->rf[3], 0x4000);
+
+  // 14:   1231a583                lw      a1,0x123(gp)
+  run_insn(hart, 0x1231a583, [&hart]() {
+    EXPECT_EQ(hart.memaddr, 0x4123);
+    EXPECT_EQ(hart.memw, 0);
+    EXPECT_EQ(hart.memsext, 1);
+    EXPECT_EQ(hart.memwidth, 2);
+    hart.memdata = 0xf00fbeef;
+  });
+  EXPECT_EQ(hart.hart->regs->rf[11], 0xf00fbeef);
+
+  // 18:   12318583                lb      a1,0x123(gp)
+  run_insn(hart, 0x12318583, [&hart]() {
+    EXPECT_EQ(hart.memaddr, 0x4123);
+    EXPECT_EQ(hart.memw, 0);
+    EXPECT_EQ(hart.memsext, 1);
+    EXPECT_EQ(hart.memwidth, 0);
+    hart.memdata = 0xffffff71;
+  });
+  EXPECT_EQ(hart.hart->regs->rf[11], 0xffffff71);
+  // 1c:   1231c583                lbu     a1,0x123(gp)
+  run_insn(hart, 0x1231c583, [&hart]() {
+    EXPECT_EQ(hart.memaddr, 0x4123);
+    EXPECT_EQ(hart.memw, 0);
+    EXPECT_EQ(hart.memsext, 0);
+    EXPECT_EQ(hart.memwidth, 0);
+    hart.memdata = 0x71;
+  });
+  EXPECT_EQ(hart.hart->regs->rf[11], 0x71);
+
 
   hart.final();
 }
