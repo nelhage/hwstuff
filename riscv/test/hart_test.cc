@@ -85,6 +85,10 @@ TEST(RISCVTest, HartTest) {
   });
   EXPECT_EQ(hart.hart->regs->rf[11], 0x71);
 
+  //   28:   00444617                auipc   a2,0x444
+  hart.pc = 0x20000000;
+  run_insn(hart, 0x00444617);
+  EXPECT_EQ(hart.hart->regs->rf[12], 0x20444000);
 
   hart.final();
 }

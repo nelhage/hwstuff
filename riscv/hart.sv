@@ -4,7 +4,7 @@
 
 module hart(input logic clk, reset,
             input logic [31:0]  insn,
-            // input logic [31:0]  pc,
+            input logic [31:0]  pc,
 
             logic [31:0]        memdata,
             output logic [31:0] memaddr,
@@ -46,7 +46,8 @@ module hart(input logic clk, reset,
 
   always_comb
     case (asel)
-      default: alu_a = r1;
+      1'0: alu_a = r1;
+      1'1: alu_a = pc;
     endcase
 
   always_comb
@@ -64,7 +65,6 @@ module hart(input logic clk, reset,
   assign memaddr = alu_out;
 
   // controller
-  assign asel = 0;
   assign memwidth = funct3[1:0];
   assign memsext = ~funct3[2];
 
@@ -72,6 +72,7 @@ module hart(input logic clk, reset,
     case (opcode)
       OPCODE_ALUIMM:
         begin
+          asel = 0;
           bsel = 1;
           regw = 1;
           memw = 0;
@@ -81,6 +82,7 @@ module hart(input logic clk, reset,
 
       OPCODE_ALU:
         begin
+          asel = 0;
           bsel = 0;
           regw = 1;
           memw = 0;
@@ -90,6 +92,7 @@ module hart(input logic clk, reset,
 
       OPCODE_LOAD:
         begin
+          asel = 0;
           memw = 0;
           regw = 1;
           bsel = 1;
@@ -99,6 +102,7 @@ module hart(input logic clk, reset,
 
       OPCODE_STORE:
         begin
+          asel = 0;
           memw = 1;
           regw = 0;
           bsel = 1;
@@ -109,6 +113,17 @@ module hart(input logic clk, reset,
 
       OPCODE_LUI:
         begin
+          asel = 0;
+          memw = 0;
+          regw = 1;
+          bsel = 1;
+          aluctl = ALUCTL_ADD;
+          rwsel = 0;
+        end
+
+      OPCODE_AUIPC:
+        begin
+          asel = 1;
           memw = 0;
           regw = 1;
           bsel = 1;
@@ -118,6 +133,7 @@ module hart(input logic clk, reset,
 
       default:
         begin
+          asel = 0;
           bsel = 0;
           regw = 0;
           memw = 0;
