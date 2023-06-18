@@ -9,8 +9,8 @@ module decoder(input logic [31:0] insn,
   assign opcode = insn[6:0];
   assign funct3 = insn[14:12];
   assign funct7 = insn[31:25];
-  assign rs1 = insn[24:20];
-  assign rs2 = insn[19:15];
+  assign rs2 = insn[24:20];
+  assign rs1 = insn[19:15];
   assign rd = insn[11:7];
 
   assign imm_Itype = {{21{insn[31]}}, insn[30:20]};

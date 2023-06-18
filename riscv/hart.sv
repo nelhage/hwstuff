@@ -6,8 +6,10 @@ module hart(input logic clk, reset,
             input logic [31:0]  insn,
             input logic [31:0]  pc,
 
-            logic [31:0]        memdata,
+
             output logic [31:0] memaddr,
+            input logic [31:0]  memrdata,
+            output logic [31:0] memwdata,
             output logic        memw, memsext,
             output logic [1:0]  memwidth
             );
@@ -59,10 +61,11 @@ module hart(input logic clk, reset,
   always_comb
     case (rwsel)
       1'0: regwdata = alu_out;
-      1'1: regwdata = memdata;
+      1'1: regwdata = memrdata;
     endcase
 
   assign memaddr = alu_out;
+  assign memwdata = memw ? r2 : 32'hZZZZZZZZ;
 
   // controller
   assign memwidth = funct3[1:0];
@@ -103,9 +106,9 @@ module hart(input logic clk, reset,
       OPCODE_STORE:
         begin
           asel = 0;
+          bsel = 1;
           memw = 1;
           regw = 0;
-          bsel = 1;
           aluctl = ALUCTL_ADD;
 
           rwsel = 1'X;

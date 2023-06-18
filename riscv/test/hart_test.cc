@@ -62,7 +62,7 @@ TEST(RISCVTest, HartTest) {
     EXPECT_EQ(hart.memw, 0);
     EXPECT_EQ(hart.memsext, 1);
     EXPECT_EQ(hart.memwidth, 2);
-    hart.memdata = 0xf00fbeef;
+    hart.memrdata = 0xf00fbeef;
   });
   EXPECT_EQ(hart.hart->regs->rf[11], 0xf00fbeef);
 
@@ -72,7 +72,7 @@ TEST(RISCVTest, HartTest) {
     EXPECT_EQ(hart.memw, 0);
     EXPECT_EQ(hart.memsext, 1);
     EXPECT_EQ(hart.memwidth, 0);
-    hart.memdata = 0xffffff71;
+    hart.memrdata = 0xffffff71;
   });
   EXPECT_EQ(hart.hart->regs->rf[11], 0xffffff71);
   // 1c:   1231c583                lbu     a1,0x123(gp)
@@ -81,14 +81,31 @@ TEST(RISCVTest, HartTest) {
     EXPECT_EQ(hart.memw, 0);
     EXPECT_EQ(hart.memsext, 0);
     EXPECT_EQ(hart.memwidth, 0);
-    hart.memdata = 0x71;
+    hart.memrdata = 0x71;
   });
   EXPECT_EQ(hart.hart->regs->rf[11], 0x71);
 
-  //   28:   00444617                auipc   a2,0x444
+  // 28:   00444617                auipc   x12,0x444
   hart.pc = 0x20000000;
   run_insn(hart, 0x00444617);
   EXPECT_EQ(hart.hart->regs->rf[12], 0x20444000);
+
+  // 2c:   0bf625a3                sw      x31,0xab(x12)
+  hart.hart->regs->rf[31] = 0x4321abcd;
+  run_insn(hart, 0x0bf625a3, [&hart]() {
+    EXPECT_EQ(hart.memaddr, 0x204440ab);
+    EXPECT_EQ(hart.memw, 1);
+    EXPECT_EQ(hart.memwidth, 2);
+    EXPECT_EQ(hart.memwdata, 0x4321abcd);
+  });
+  // 30:   0bf605a3                sb      x31,0ax1b(x12)
+  run_insn(hart, 0x0bf605a3, [&hart]() {
+    EXPECT_EQ(hart.memaddr, 0x204440ab);
+    EXPECT_EQ(hart.memw, 1);
+    EXPECT_EQ(hart.memwidth, 0);
+    EXPECT_EQ(hart.memwdata, 0x4321abcd);
+  });
+
 
   hart.final();
 }
