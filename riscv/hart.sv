@@ -1,7 +1,3 @@
-`define MEMW_BYTE 2'b00
-`define MEMW_HALF 2'b01
-`define MEMW_WORD 2'b10
-
 module hart(input logic clk, reset,
             input logic [31:0]  insn,
             input logic [31:0]  pc,
@@ -14,23 +10,24 @@ module hart(input logic clk, reset,
             output logic [1:0]  memwidth
             );
 `include "opcodes.sv";
+`include "membus_consts.sv"
 
   logic [4:0]                   rs1, rs2, rd;
-  logic       regw;
-  logic [31:0] r1, r2, regwdata;
-  logic [31:0] imm;
+  logic                         regw;
+  logic [31:0]                  r1, r2, regwdata;
+  logic [31:0]                  imm;
 
-  logic [31:0] alu_a, alu_b, alu_out;
+  logic [31:0]                  alu_a, alu_b, alu_out;
 
   // control signals
-  logic [6:0]  opcode;
-  logic [2:0]  funct3;
+  logic [6:0]                   opcode;
+  logic [2:0]                   funct3;
   /* verilator lint_off UNUSEDSIGNAL */
-  logic [6:0]  funct7;
+  logic [6:0]                   funct7;
   /* verilator lint_on UNUSEDSIGNAL */
-  logic [3:0]  aluctl;
-  logic        asel, bsel;
-  logic        rwsel;
+  logic [3:0]                   aluctl;
+  logic                         asel, bsel;
+  logic                         rwsel;
 
   // datapath
 
