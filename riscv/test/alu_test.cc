@@ -18,7 +18,7 @@ struct AluTest {
   uint32_t expect;
 };
 
-TEST(RISCVTest, ALUTest) {
+TEST(ALUTest, Smoke) {
   auto contextp = make_unique<VerilatedContext>();
 
   Valu alu;

@@ -13,7 +13,7 @@
 
 using std::ios;
 
-TEST(RISCVTest, MemoryTest) {
+TEST(MemoryTest, Basic) {
   auto contextp = std::make_unique<VerilatedContext>();
 
   Vmemory memory;

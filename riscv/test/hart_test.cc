@@ -58,7 +58,7 @@ void test_branch(Vhart &hart,
                    pc, hart.nextpc, pc+4, uint32_t(int32_t(pc) + delta), expect_branch);
 }
 
-TEST(RISCVTest, HartTest) {
+TEST(HartTest, Smoke) {
   auto contextp = std::make_unique<VerilatedContext>();
   Vhart hart;
 

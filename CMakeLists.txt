@@ -13,7 +13,10 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+include(GoogleTest)
 
 add_subdirectory(third_party/fmt-10.0.0 EXCLUDE_FROM_ALL)
+
+enable_testing()
 
 add_subdirectory(riscv)
