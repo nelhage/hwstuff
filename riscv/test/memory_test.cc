@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Vmemory.h"
+#include "Vmemory_memory.h"
 
 #include "svdpi.h"
 #include <verilated.h>
@@ -8,9 +9,6 @@
 
 #include <fmt/core.h>
 
-#include <fstream>
-#include <iostream>
-#include <memory>
 #include <vector>
 
 using std::ios;
@@ -20,24 +18,13 @@ TEST(RISCVTest, MemoryTest) {
 
   Vmemory memory;
 
-  auto scope = svGetScopeFromName("TOP.memory");
-  ASSERT_NE(scope, nullptr);
-
-  std::vector<uint32_t> mem_fill;
-  mem_fill.resize(1 << 16);
+  const size_t nmem = sizeof(memory.memory->RAM.m_storage)/sizeof(memory.memory->RAM.m_storage[0]);
+  std::vector<uint32_t> mem_fill(nmem);
   for (auto i = 0; i < mem_fill.size(); i++) {
     mem_fill[i] =
         static_cast<uint32_t>((uint64_t(0xbad4d0eecafecafe) * i) >> 32);
+    memory.memory->RAM.m_storage[i] = mem_fill[i];
   }
-  {
-    std::ofstream out("testmem.dat", ios::out | ios::trunc);
-    for (auto it = mem_fill.begin(); it != mem_fill.end(); ++it) {
-      out << fmt::format("{:08x}\n", *it);
-    }
-  }
-
-  svSetScope(scope);
-  memory.initialize_memory("testmem.dat");
 
   memory.clk = 0;
   memory.eval();

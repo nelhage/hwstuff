@@ -6,7 +6,7 @@ module memory(input logic clk, we,
 
   parameter                       MEMORY_WORDS = 1 << 16;
 
-  logic [31:0]                    RAM [(MEMORY_WORDS)-1:0];
+  logic [31:0]                    RAM [(MEMORY_WORDS)-1:0] /* verilator public */;
 
   /* verilator lint_off WIDTH */
   always_comb
@@ -24,10 +24,4 @@ module memory(input logic clk, we,
   always_ff @(posedge(clk))
     if (we && wa[31:2] < MEMORY_WORDS)
       RAM[wa[31:2]] <= wd;
-
-  task initialize_memory(input string filename);
-    $readmemh(filename, RAM);
-  endtask
-
-  export "DPI-C" task initialize_memory;
 endmodule
