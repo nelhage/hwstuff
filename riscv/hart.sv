@@ -9,8 +9,6 @@ module hart(input logic clk, reset,
             output logic        memw, memsext,
             output logic [1:0]  memwidth
             );
-`include "opcodes.sv";
-
   logic [4:0]                   rs1, rs2, rd;
   logic [31:0]                  r1, r2, regwdata;
   logic [31:0]                  imm;

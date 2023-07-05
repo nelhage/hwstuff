@@ -1,3 +1,7 @@
+`ifndef PACKAGE_OPCODES
+`define PACKAGE_OPCODES
+
+package opcodes;
 /* verilator lint_off UNUSEDPARAM */
 localparam OPCODE_LUI   = 7'b0110111;
 localparam OPCODE_AUIPC = 7'b0010111;
@@ -47,3 +51,5 @@ localparam ALUCTL_SRA  = 4'hd;
 localparam ALUCTL_OR   = 4'h6;
 localparam ALUCTL_AND  = 4'h7;
 /* verilator lint_on UNUSEDPARAM */
+endpackage;
+`endif
