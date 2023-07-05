@@ -2,7 +2,6 @@ module hart(input logic clk, reset,
             input logic [31:0]  insn,
             input logic [31:0]  pc,
 
-
             output logic [31:0] nextpc,
             output logic [31:0] memaddr,
             input logic [31:0]  memrdata,
