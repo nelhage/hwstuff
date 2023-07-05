@@ -31,18 +31,35 @@ module hart(input logic clk, reset,
   logic [1:0]                   rwsel;
   logic [1:0]                   pcsel;
 
-  controller control(opcode, funct3, funct7,
-                     memwidth, memw, memsext,
-                     aluctl, asel, bsel,
-                     regw, rwsel, pcsel);
+  controller control(/*AUTOINST*/
+                     // Outputs
+                     .memwidth          (memwidth[1:0]),
+                     .memw              (memw),
+                     .memsext           (memsext),
+                     .aluctl            (aluctl[3:0]),
+                     .asel              (asel),
+                     .bsel              (bsel),
+                     .regw              (regw),
+                     .rwsel             (rwsel[1:0]),
+                     .pcsel             (pcsel[1:0]),
+                     // Inputs
+                     .opcode            (opcode[6:0]),
+                     .funct3            (funct3[2:0]),
+                     .funct7            (funct7[6:0]));
 
   // datapath
 
-  regfile regs(clk, reset, regw,
-               rs1, rs2, rd,
-               regwdata,
-               r1, r2);
+  regfile regs(
+               clk, reset,
+               .ra1(rs1),
+               .ra2(rs2),
+               .rd1(r1),
+               .rd2(r2),
 
+               .we3(regw),
+               .wa3(rd),
+               .wd3(regwdata)
+               );
 
   alu alu(alu_a, alu_b, aluctl, alu_out);
 
