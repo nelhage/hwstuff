@@ -1,7 +1,7 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(modules_to_test alu memory hart)
+set(modules_to_test alu memory hart fetchstore)
 
 foreach(module IN LISTS modules_to_test)
   set(target "${module}_test")
