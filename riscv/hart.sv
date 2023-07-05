@@ -3,6 +3,7 @@ module hart(input logic clk, reset,
             input logic [31:0]  pc,
 
 
+            output logic [31:0] nextpc,
             output logic [31:0] memaddr,
             input logic [31:0]  memrdata,
             output logic [31:0] memwdata,
@@ -10,24 +11,30 @@ module hart(input logic clk, reset,
             output logic [1:0]  memwidth
             );
 `include "opcodes.sv";
-`include "membus_consts.sv"
 
   logic [4:0]                   rs1, rs2, rd;
-  logic                         regw;
   logic [31:0]                  r1, r2, regwdata;
   logic [31:0]                  imm;
 
   logic [31:0]                  alu_a, alu_b, alu_out;
+  logic [31:0]                  pcplus4;
+  logic [31:0]                  pcplusimm;
+
 
   // control signals
   logic [6:0]                   opcode;
   logic [2:0]                   funct3;
-  /* verilator lint_off UNUSEDSIGNAL */
   logic [6:0]                   funct7;
-  /* verilator lint_on UNUSEDSIGNAL */
   logic [3:0]                   aluctl;
   logic                         asel, bsel;
-  logic                         rwsel;
+  logic                         regw;
+  logic [1:0]                   rwsel;
+  logic [1:0]                   pcsel;
+
+  controller control(opcode, funct3, funct7,
+                     memwidth, memw, memsext,
+                     aluctl, asel, bsel,
+                     regw, rwsel, pcsel);
 
   // datapath
 
@@ -43,6 +50,12 @@ module hart(input logic clk, reset,
                  rs1, rs2, rd, imm);
 
 
+  assign pcplus4 = pc + 4;
+  assign pcplusimm = pc + imm;
+
+  assign memaddr = alu_out;
+  assign memwdata = memw ? r2 : 32'hZZZZZZZZ;
+
   always_comb
     case (asel)
       1'0: alu_a = r1;
@@ -57,91 +70,21 @@ module hart(input logic clk, reset,
 
   always_comb
     case (rwsel)
-      1'0: regwdata = alu_out;
-      1'1: regwdata = memrdata;
+      2'h0: regwdata = alu_out;
+      2'h1: regwdata = memrdata;
+      2'h2: regwdata = pcplus4;
+      default: regwdata = 32'X;
     endcase
-
-  assign memaddr = alu_out;
-  assign memwdata = memw ? r2 : 32'hZZZZZZZZ;
-
-  // controller
-  assign memwidth = funct3[1:0];
-  assign memsext = ~funct3[2];
 
   always_comb
-    case (opcode)
-      OPCODE_ALUIMM:
-        begin
-          asel = 0;
-          bsel = 1;
-          regw = 1;
-          memw = 0;
-          rwsel = 0;
-          aluctl = {funct7[5], funct3};
-        end
-
-      OPCODE_ALU:
-        begin
-          asel = 0;
-          bsel = 0;
-          regw = 1;
-          memw = 0;
-          rwsel = 0;
-          aluctl = ALUCTL_ADD;
-        end
-
-      OPCODE_LOAD:
-        begin
-          asel = 0;
-          memw = 0;
-          regw = 1;
-          bsel = 1;
-          rwsel = 1;
-          aluctl = ALUCTL_ADD;
-        end
-
-      OPCODE_STORE:
-        begin
-          asel = 0;
-          bsel = 1;
-          memw = 1;
-          regw = 0;
-          aluctl = ALUCTL_ADD;
-
-          rwsel = 1'X;
-        end
-
-      OPCODE_LUI:
-        begin
-          asel = 0;
-          memw = 0;
-          regw = 1;
-          bsel = 1;
-          aluctl = ALUCTL_ADD;
-          rwsel = 0;
-        end
-
-      OPCODE_AUIPC:
-        begin
-          asel = 1;
-          memw = 0;
-          regw = 1;
-          bsel = 1;
-          aluctl = ALUCTL_ADD;
-          rwsel = 0;
-        end
-
-      default:
-        begin
-          asel = 0;
-          bsel = 0;
-          regw = 0;
-          memw = 0;
-          aluctl = 0;
-          rwsel = 0;
-        end
+    case (pcsel)
+      2'b00: nextpc = pcplus4;
+      2'b01: nextpc = alu_out & ~32'b1;
+      2'b10, 2'b11:
+        if ((alu_out == 0) == pcsel[0])
+          nextpc = pcplus4;
+        else
+          nextpc = pcplusimm;
+      default: nextpc = 32'X;
     endcase
-
-
-  // controller control(insn);
 endmodule

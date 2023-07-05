@@ -7,18 +7,16 @@
 #include "svdpi.h"
 #include <verilated.h>
 
-template <typename T>
-void run_insn(Vhart &hart, uint32_t insn, T&& handle_mem) {
+static void nomem(){};
+
+template <typename T = typeof(nomem)>
+void run_insn(Vhart &hart, uint32_t insn, T&& handle_mem = nomem) {
   hart.clk = 0;
   hart.insn = insn;
   hart.eval();
   handle_mem();
   hart.clk = 1;
   hart.eval();
-}
-
-void run_insn(Vhart &hart, uint32_t insn) {
-  run_insn(hart, insn, [](){});
 }
 
 TEST(RISCVTest, HartTest) {
@@ -105,6 +103,21 @@ TEST(RISCVTest, HartTest) {
     EXPECT_EQ(hart.memwidth, 0);
     EXPECT_EQ(hart.memwdata, 0x4321abcd);
   });
+
+  // 34:   1850056f                jal     x10,.+0x984
+  hart.pc = 0x121212;
+  run_insn(hart, 0x1850056f);
+  EXPECT_EQ(hart.hart->regs->rf[10], 0x121212+4);
+  EXPECT_EQ(hart.nextpc, 0x121212+0x984);
+
+  // 38:   00b98567                jalr    x10,11(x19)
+  hart.pc = 0xd00db0d;
+  hart.hart->regs->rf[19] = 0xcafef00d;
+  run_insn(hart, 0x00b98567);
+  EXPECT_EQ(hart.hart->regs->rf[10], 0xd00db0d+4);
+  EXPECT_EQ(hart.nextpc, 0xcafef00d+11);
+
+  // Branches
 
 
   hart.final();
