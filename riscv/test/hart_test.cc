@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <gtest/gtest.h>
 
 #include "Vhart.h"
@@ -5,7 +6,10 @@
 #include "Vhart_regfile.h"
 
 #include "svdpi.h"
+#include "opcodes.h"
 #include <verilated.h>
+
+#include <fmt/core.h>
 
 static void nomem(){};
 
@@ -17,6 +21,41 @@ void run_insn(Vhart &hart, uint32_t insn, T&& handle_mem = nomem) {
   handle_mem();
   hart.clk = 1;
   hart.eval();
+}
+
+void test_branch(Vhart &hart,
+                 uint32_t branch_op,
+                 uint32_t lhs,
+                 uint32_t rhs,
+                 bool expect_branch) {
+
+  uint32_t pc = 0x19992023;
+  uint32_t ra = 20;
+  uint32_t rb = 22;
+  int32_t delta = -130;
+  uint32_t delta_imm = (uint32_t)(delta & 0x1fff);
+
+  uint32_t insn = (
+                   (((delta_imm >> 12) & 0b1) << 31) |
+                   (((delta_imm >> 5) & 0b111111) << 25) |
+                   (rb << 20) |
+                   (ra << 15) |
+                   (branch_op << 12) |
+                   (((delta_imm >> 1) & 0b1111) << 8) |
+                   (((delta_imm >> 11) & 0b1) << 7) |
+                   0x63
+                   );
+
+  hart.pc = pc;
+  hart.hart->regs->rf[ra] = lhs;
+  hart.hart->regs->rf[rb] = rhs;
+  run_insn(hart, insn);
+
+  uint32_t expectpc = expect_branch ? uint32_t(int32_t(pc) + delta) : pc + 4;
+
+  EXPECT_EQ(hart.nextpc, expectpc)
+    << fmt::format("pc={:08x} nextpc={:08x} pc+4={:08x} brpc={:08x} expect={}",
+                   pc, hart.nextpc, pc+4, uint32_t(int32_t(pc) + delta), expect_branch);
 }
 
 TEST(RISCVTest, HartTest) {
@@ -117,8 +156,43 @@ TEST(RISCVTest, HartTest) {
   EXPECT_EQ(hart.hart->regs->rf[10], 0xd00db0d+4);
   EXPECT_EQ(hart.nextpc, 0xcafef00d+11);
 
-  // Branches
+  hart.pc = 0xd00db0d;
+  hart.hart->regs->rf[19] = 0xcafef00e;
+  run_insn(hart, 0x00b98567);
+  EXPECT_EQ(hart.hart->regs->rf[10], 0xd00db0d+4);
+  EXPECT_EQ(hart.nextpc, 0xcafef00d+11);
 
+  // Conditional branches
+  test_branch(hart, FUNCT3_BR_BEQ, 0x111, 0x111, true);
+  test_branch(hart, FUNCT3_BR_BEQ, 0x111, 0x211, false);
+
+  test_branch(hart, FUNCT3_BR_BNE, 0x111, 0x111, false);
+  test_branch(hart, FUNCT3_BR_BNE, 0xaaa, 0x111, true);
+  test_branch(hart, FUNCT3_BR_BNE, 0x110, 0x111, true);
+
+  test_branch(hart, FUNCT3_BR_BLT, 0x110, 0x111, true);
+  test_branch(hart, FUNCT3_BR_BLT, 0xcad, 0xbab, false);
+  test_branch(hart, FUNCT3_BR_BLT, uint32_t(-1), 0, true);
+
+  test_branch(hart, FUNCT3_BR_BLT, 0x110, 0x111, true);
+  test_branch(hart, FUNCT3_BR_BLT, 0xeeabc, 0xeeabc, false);
+  test_branch(hart, FUNCT3_BR_BLT, 0xcad, 0xbab, false);
+  test_branch(hart, FUNCT3_BR_BLT, uint32_t(-1), 0, true);
+
+  test_branch(hart, FUNCT3_BR_BGE, 0x110, 0x111, false);
+  test_branch(hart, FUNCT3_BR_BGE, 0xeeabc, 0xeeabc, true);
+  test_branch(hart, FUNCT3_BR_BGE, 0xcad, 0xbab, true);
+  test_branch(hart, FUNCT3_BR_BGE, uint32_t(-1), 0, false);
+
+  test_branch(hart, FUNCT3_BR_BLTU, 0x110, 0x111, true);
+  test_branch(hart, FUNCT3_BR_BLTU, 0xeeabc, 0xeeabc, false);
+  test_branch(hart, FUNCT3_BR_BLTU, 0xcad, 0xbab, false);
+  test_branch(hart, FUNCT3_BR_BLTU, uint32_t(-1), 0, false);
+
+  test_branch(hart, FUNCT3_BR_BGEU, 0x110, 0x111, false);
+  test_branch(hart, FUNCT3_BR_BGEU, 0xeeabc, 0xeeabc, true);
+  test_branch(hart, FUNCT3_BR_BGEU, 0xcad, 0xbab, true);
+  test_branch(hart, FUNCT3_BR_BGEU, uint32_t(-1), 0, true);
 
   hart.final();
 }
