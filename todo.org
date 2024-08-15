@@ -1,0 +1,17 @@
+* single-cycle RISCV
+** DONE branch instructions
+CLOSED: [2023-07-05 Wed 11:00]
+  - [X] newpc
+  - [X] unconditional branches
+  - [X] conditional branches
+  - [X] testing
+** DONE memory access unit
+CLOSED: [2023-07-05 Wed 13:36]
+** DONE instruction fetch
+CLOSED: [2023-07-05 Wed 13:36]
+** TODO illegal operations
+* refactors
+** TODO use constants for select signals
+  - `typedef enum`, see ex 4.30
+    - but can we share those across modules?
+** TODO autogenerate shared C++/Verilog constants
